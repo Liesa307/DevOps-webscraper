@@ -1,0 +1,172 @@
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.VisualBasic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Security.Cryptography.X509Certificates;
+using static System.Net.Mime.MediaTypeNames;
+
+namespace webscraping
+{
+
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+
+              
+
+
+
+        string text;
+        Console.WriteLine("Choose your option:");
+            Console.WriteLine("1: jumping list");
+            Console.WriteLine("2: youtube search");
+            Console.WriteLine("3: horse records");
+            Console.WriteLine("4: IT jobs");
+            Console.Write("Enter your choice: ");
+            text = Console.ReadLine();
+
+              if (text == "1"){
+                IWebDriver driver = new ChromeDriver();
+        driver.Navigate().GoToUrl("https://www.sentowerpark.com/nl/events/aankomend");
+       
+        Thread.Sleep(7000);
+                // lijst met de hele tabel zodat we deze kunnen opsplitsen
+                IWebElement dates = driver.FindElement(By.XPath("/html/body/div[2]/section[2]/div/div[2]/div[2]/table"));
+        // hiermee halen we alle trs uit de tabel wat wil zeggen dat er ook nog onodige informatie zoals lees meer, inschrijven, etc in zit
+        List<IWebElement> datesList = new List<IWebElement>(dates.FindElements(By.TagName("tr")));
+
+        // we maken een variabele lines aan. Dit is een lijst waar alle substrings inkomen
+        var lines = new List<string> { "Start \t Eind \t Event \n" };
+
+                // nu gaan we met een foreach alle 'datums' uit de lijst halen
+
+
+
+ foreach (var date in datesList){
+                  
+                    // we maken een text variabele van onze tr zodat we ermee kunnen werken
+                    var jumping = date.Text;
+
+        // het eerste onnodige woord is startlijst dus dit wordt onze eerste index
+        var word = "startlijst";
+        int first = jumping.IndexOf(word);
+
+
+
+
+                    // alleen als onze slice groter is dan 0 printen we onze substring die loopt van 0 tot onze index af
+                    if (first > 0)
+                    {
+                        Console.WriteLine(jumping.Substring(0, first));
+                        lines.Add(jumping.Substring(0, first));
+                    }
+}
+
+
+try
+{
+    System.IO.File.WriteAllLines(@"C:\Users\Eigenaar\source\repos\webscraper5.0\webscraper5.0\jumping.txt", lines);
+    Console.WriteLine("Lines written to file jumping.txt successfully.");
+   
+    Console.WriteLine("Lines written to file jumpingJson.json successfully.");
+}
+catch (Exception err)
+{
+    Console.WriteLine(err.Message);
+
+}
+                
+            }    
+               
+
+  if (text == "2")
+{
+    IWebDriver driver2 = new ChromeDriver();
+    driver2.Navigate().GoToUrl("https://youtube.com/");
+    Thread.Sleep(7000);
+    IWebElement search = driver2.FindElement(By.XPath("/html/body/ytd-app/div[1]/div/ytd-masthead/div[3]/div[2]/ytd-searchbox"));
+    search.Click();
+    search.SendKeys("horse\n");
+    Thread.Sleep(4000);
+    List<IWebElement> videos = new List<IWebElement>(driver2.FindElements(By.CssSelector("#contents > ytd-video-renderer")));
+
+
+    foreach (var element in videos)
+    {
+        Console.WriteLine(element.Text);
+    }
+
+
+
+}
+
+
+if (text == "3")
+{
+    Console.WriteLine("You want to search for your horses info?");
+    Console.Write("Please enter the full name of the horse: ");
+    string horse = Console.ReadLine();
+    Thread.Sleep(1000);
+    IWebDriver driver3 = new ChromeDriver();
+    driver3.Navigate().GoToUrl("https://app.equibel.be/prg/horses/search.php?lng=NL");
+    Thread.Sleep(7000);
+    IWebElement roepnaam = driver3.FindElement(By.XPath("/html/body/section/div/div/form/fieldset/table/tbody/tr[2]/td[2]/input"));
+    roepnaam.Click();
+    roepnaam.SendKeys(horse);
+    IWebElement submit = driver3.FindElement(By.XPath("/html/body/section/div/div/form/div/input"));
+    submit.Click();
+    IWebElement info = driver3.FindElement(By.XPath("/html/body/section/div/div/table"));
+    List<IWebElement> results = new List<IWebElement>(info.FindElements(By.TagName("tr")));
+    foreach (var result in results)
+    {
+        Console.WriteLine(result.Text);
+    }
+
+}
+
+
+if (text == "4")
+{
+
+    Console.Write("Please enter your it job: ");
+    string job = Console.ReadLine();
+    IWebDriver driver4 = new ChromeDriver();
+    driver4.Navigate().GoToUrl("https://www.ictjob.be/nl/");
+    Thread.Sleep(10000);
+    var zoek = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div[1]/div/section/form/div/div/div[3]/div[2]/div[1]/div[1]/div/div[1]/label/input"));
+    zoek.SendKeys(job);
+    zoek.Submit();
+    Thread.Sleep(8000);
+    IWebElement info = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul"));
+    List<IWebElement> results = new List<IWebElement>(info.FindElements(By.CssSelector("search-item clearfix")));
+    int i = 1;
+    foreach (var result in results)
+    {
+        while (i < 6)
+        {
+            var name = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[1]/span[2]/a/h2"));
+            Console.WriteLine(name.Text);
+            var jobit = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[1]/span[2]/span[1]"));
+            Console.WriteLine(jobit.Text);
+            var location = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[1]/span[2]/span[2]/span[2]/span/span"));
+            Console.WriteLine(location.Text);
+            var description = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[1]/span[2]/span[3]"));
+            Console.WriteLine(description.Text);
+            i++;
+        }
+    }
+}
+
+
+
+        }
+    }
+}
+
