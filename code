@@ -16,13 +16,45 @@ namespace webscraping
 
     public class Program
     {
+        public class Itjobs
+        {
+            public string name { get; set; }
+            public string job { get; set; }
+            public string location { get; set;}
+            public string description { get; set;}
+        }
+
+        public class Youtube
+        {
+            public string name { get; set; }
+            public string vieuws { get; set; }
+            public string channel { get; set;}
+            public string description { get; set;}
+        }
+
+        public class HorseRecord
+        {
+            public string immanr { get; set; }
+            public string roepnaam { get; set; }
+            public string geboorte { get; set;}
+            public string feinummer { get; set;}
+            public string ueln { get; set;}
+            public string studbook { get; set;}
+            public string verantwoordelijke { get; set;}
+        }
+
+        public class Jumping
+        {
+            public string start { get; set; }
+            public string eind { get; set; }
+            public string name { get; set;}
+           
+        }
+
         public static void Main(string[] args)
         {
-
-              
-
-
-
+            
+       
         string text;
         Console.WriteLine("Choose your option:");
             Console.WriteLine("1: jumping list");
@@ -33,6 +65,7 @@ namespace webscraping
             text = Console.ReadLine();
 
               if (text == "1"){
+                 List<Jumping> jumpingdata = new List<Jumping>();
                 IWebDriver driver = new ChromeDriver();
         driver.Navigate().GoToUrl("https://www.sentowerpark.com/nl/events/aankomend");
        
@@ -67,6 +100,21 @@ namespace webscraping
                         Console.WriteLine(jumping.Substring(0, first));
                         lines.Add(jumping.Substring(0, first));
                     }
+                     List<IWebElement> td = new List<IWebElement>(date.FindElements(By.TagName("td")));
+                    if (td.Count > 0) { 
+         jumpingdata.Add(new Jumping()
+    {
+        start = td[2].Text,
+        eind = td[3].Text,
+        name = td[4].Text
+        
+
+        
+    });}
+
+
+
+
 }
 
 
@@ -74,8 +122,10 @@ try
 {
     System.IO.File.WriteAllLines(@"C:\Users\Eigenaar\source\repos\webscraper5.0\webscraper5.0\jumping.txt", lines);
     Console.WriteLine("Lines written to file jumping.txt successfully.");
+    string json = JsonSerializer.Serialize(jumpingdata);
+    File.WriteAllText(@"C:\Users\Eigenaar\source\repos\webscraper5.0\webscraper5.0\jumping.json", json);
    
-    Console.WriteLine("Lines written to file jumpingJson.json successfully.");
+    Console.WriteLine("Lines written to file jumping.json successfully.");
 }
 catch (Exception err)
 {
@@ -88,6 +138,7 @@ catch (Exception err)
 
   if (text == "2")
 {
+    List<Youtube> youtube = new List<Youtube>();
     IWebDriver driver2 = new ChromeDriver();
     driver2.Navigate().GoToUrl("https://youtube.com/");
     Thread.Sleep(7000);
@@ -95,12 +146,42 @@ catch (Exception err)
     search.Click();
     search.SendKeys("horse\n");
     Thread.Sleep(4000);
+    IWebElement filter = driver2.FindElement(By.XPath("/html/body/ytd-app/div[1]/ytd-page-manager/ytd-search/div[1]/ytd-two-column-search-results-renderer/div[2]/div/ytd-section-list-renderer/div[1]/div[2]/ytd-search-sub-menu-renderer/div[1]/div/ytd-toggle-button-renderer/yt-button-shape/button/yt-touch-feedback-shape/div/div[2]"));
+    filter.Click();
+    IWebElement relevant = driver2.FindElement(By.XPath("/html/body/ytd-app/div[1]/ytd-page-manager/ytd-search/div[1]/ytd-two-column-search-results-renderer/div[2]/div/ytd-section-list-renderer/div[1]/div[2]/ytd-search-sub-menu-renderer/div[1]/iron-collapse/div/ytd-search-filter-group-renderer[1]/ytd-search-filter-renderer[1]/a/div/yt-formatted-string"));
+    relevant.Click();
+    Thread.Sleep(2000); 
+    
+    
     List<IWebElement> videos = new List<IWebElement>(driver2.FindElements(By.CssSelector("#contents > ytd-video-renderer")));
 
 
     foreach (var element in videos)
     {
-        Console.WriteLine(element.Text);
+
+        
+         Console.WriteLine(element.Text);
+         youtube.Add(new Youtube()
+    {
+        name = element.FindElement(By.Id("video-title")).Text,
+        vieuws = element.FindElement(By.Id("metadata-line")).Text,
+        channel = element.FindElement(By.Id("text")).Text,
+        description = element.FindElement(By.Id("description-text")).Text
+    });
+    }
+
+    try
+    {
+    string json = JsonSerializer.Serialize(youtube);
+    File.WriteAllText(@"C:\Users\Eigenaar\source\repos\webscraper5.0\webscraper5.0\youtube.json", json);
+    Console.WriteLine("Lines written to file youtube.json successfully.");
+   
+    
+    }
+    catch (Exception err)
+    {
+    Console.WriteLine(err.Message);
+
     }
 
 
@@ -110,6 +191,7 @@ catch (Exception err)
 
 if (text == "3")
 {
+     List<HorseRecord> horserecord = new List<HorseRecord>();
     Console.WriteLine("You want to search for your horses info?");
     Console.Write("Please enter the full name of the horse: ");
     string horse = Console.ReadLine();
@@ -122,46 +204,165 @@ if (text == "3")
     roepnaam.SendKeys(horse);
     IWebElement submit = driver3.FindElement(By.XPath("/html/body/section/div/div/form/div/input"));
     submit.Click();
+    Thread.Sleep(2000);
     IWebElement info = driver3.FindElement(By.XPath("/html/body/section/div/div/table"));
     List<IWebElement> results = new List<IWebElement>(info.FindElements(By.TagName("tr")));
     foreach (var result in results)
     {
+        
         Console.WriteLine(result.Text);
+        List<IWebElement> td = new List<IWebElement>(result.FindElements(By.TagName("td")));
+        if (td.Count > 0)
+                    {
+                                 horserecord.Add(new HorseRecord()
+    {
+        immanr = td[0].Text,
+        roepnaam = td[1].Text,
+        geboorte = td[2].Text,
+        feinummer = td[3].Text,
+        ueln = td[4].Text,
+        studbook = td[5].Text,
+        verantwoordelijke = td[6].Text
+
+
+    });
+                    }
+
     }
+
+     try
+    {
+    string json = JsonSerializer.Serialize(horserecord);
+    File.WriteAllText(@"C:\Users\Eigenaar\source\repos\webscraper5.0\webscraper5.0\horserecord.json", json);
+    Console.WriteLine("Lines written to file horserecord.json successfully.");
+   
+    
+    }
+    catch (Exception err)
+    {
+    Console.WriteLine(err.Message);
+
+    }
+
+    
 
 }
 
 
 if (text == "4")
 {
-
+    List<Itjobs> itjobs = new List<Itjobs>();
     Console.Write("Please enter your it job: ");
-    string job = Console.ReadLine();
+    string jobname = Console.ReadLine();
     IWebDriver driver4 = new ChromeDriver();
     driver4.Navigate().GoToUrl("https://www.ictjob.be/nl/");
     Thread.Sleep(10000);
     var zoek = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div[1]/div/section/form/div/div/div[3]/div[2]/div[1]/div[1]/div/div[1]/label/input"));
-    zoek.SendKeys(job);
+    zoek.SendKeys(jobname);
     zoek.Submit();
     Thread.Sleep(8000);
-    IWebElement info = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul"));
-    List<IWebElement> results = new List<IWebElement>(info.FindElements(By.CssSelector("search-item clearfix")));
-    int i = 1;
-    foreach (var result in results)
+   
+   
+    var name1 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[1]/span[2]/a/h2"));
+    var jobit1 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[1]/span[2]/span[1]"));
+    var location1 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[1]/span[2]/span[2]/span[2]/span/span"));
+    var description1 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[1]/span[2]/span[3]"));
+
+    var name2 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[2]/span[2]/a/h2"));
+    var jobit2 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[2]/span[2]/span[1]"));
+    var location2 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[2]/span[2]/span[2]/span[2]/span/span"));
+    var description2 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[2]/span[2]/span[3]"));
+
+    var name3 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[3]/span[2]/a/h2"));
+    var jobit3 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[3]/span[2]/span[1]"));
+    var location3 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[3]/span[2]/span[2]/span[2]/span/span"));
+    var description3 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[3]/span[2]/span[3]"));
+
+    var name4 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[5]/span[2]/a/h2"));
+    var jobit4 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[5]/span[2]/span[1]"));
+    var location4 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[5]/span[2]/span[2]/span[2]/span/span"));
+    var description4 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[5]/span[2]/span[3]"));
+
+    var name5 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[6]/span[2]/a/h2"));
+    var jobit5 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[6]/span[2]/span[1]"));
+    var location5 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[6]/span[2]/span[2]/span[2]/span/span"));
+    var description5 = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[6]/span[2]/span[3]"));
+
+    
+    itjobs.Add(new Itjobs()
     {
-        while (i < 6)
-        {
-            var name = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[1]/span[2]/a/h2"));
-            Console.WriteLine(name.Text);
-            var jobit = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[1]/span[2]/span[1]"));
-            Console.WriteLine(jobit.Text);
-            var location = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[1]/span[2]/span[2]/span[2]/span/span"));
-            Console.WriteLine(location.Text);
-            var description = driver4.FindElement(By.XPath("/html/body/section/div[1]/div/div[2]/div/div/form/div[2]/div/div/div[2]/section/div/div[2]/div[1]/div/ul/li[1]/span[2]/span[3]"));
-            Console.WriteLine(description.Text);
-            i++;
-        }
+        name = name1.Text,
+        job = jobit1.Text,
+        location = location1.Text,
+        description = description1.Text
+    });
+
+    itjobs.Add(new Itjobs()
+    {
+        name = name2.Text,
+        job = jobit2.Text,
+        location = location2.Text,
+        description = description2.Text
+                });
+    itjobs.Add(new Itjobs()
+    {
+        name = name3.Text,
+        job = jobit3.Text,
+        location = location3.Text,
+        description = description3.Text
+                });
+    itjobs.Add(new Itjobs()
+    {
+        name = name4.Text,
+        job = jobit4.Text,
+        location = location4.Text,
+        description = description4.Text
+                });
+    itjobs.Add(new Itjobs()
+    {
+        name = name5.Text,
+        job = jobit5.Text,
+        location = location5.Text,
+        description = description5.Text
+                });
+    
+    
+    
+    
+
+    
+    try
+    {
+    string json = JsonSerializer.Serialize(itjobs);
+    File.WriteAllText(@"C:\Users\Eigenaar\source\repos\webscraper5.0\webscraper5.0\itjobs.json", json);
+    Console.WriteLine("Lines written to file itjobs.json successfully.");
+   
+    
     }
+    catch (Exception err)
+    {
+    Console.WriteLine(err.Message);
+
+    }
+       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 
